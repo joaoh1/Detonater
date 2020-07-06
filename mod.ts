@@ -1,5 +1,5 @@
 //The Detonater
-//Version: 1.0.0
+//Version: 1.0.1
 
 import * as filepath from "https://deno.land/std/path/mod.ts";
 import * as jszip from "https://deno.land/x/jszip/mod.ts";
@@ -16,15 +16,15 @@ if (Deno.args.length >= 2) {
 	
     if (Deno.args[0] == "file") {
 		const compressedJar = await compressJar(targetPath);
-		await fs.ensureDir(`./detonatedMods/`);
-		await Deno.writeFile(`./detonatedMods/${filepath.parse(targetPath).base}`, compressedJar);
+		await fs.ensureDir(`./detonatedmods/`);
+		await Deno.writeFile(`./detonatedmods/${filepath.parse(targetPath).base}`, compressedJar);
     } else if (Deno.args[0] == "folder") {
 		for await (const mod of Deno.readDir(targetPath)) {
 			if (mod.isFile && mod.name.endsWith(".jar")) {
 				console.log(`Optimizing ${mod.name}...`);
 				const compressedJar = await compressJar(`${targetPath}/${mod.name}`);
-				await fs.ensureDir("./detonatedMods");
-				await Deno.writeFile(`./detonatedMods/${mod.name}`, compressedJar);
+				await fs.ensureDir("./detonatedmods");
+				await Deno.writeFile(`./detonatedmods/${mod.name}`, compressedJar);
 			}
 		}
     } else {

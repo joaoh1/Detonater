@@ -7,10 +7,10 @@ The Detonater is a tool written in TypeScript for compressing Fabric mods into e
 In order to run this tool, you will need to have [Deno](https://deno.land/) and [oxipng](https://github.com/shssoichiro/oxipng) installed. After both are installed, there's two ways to use this tool:
 
 One way is to provide a folder which the mods to be compressed with the following syntax:
-`deno run --allow-read --allow-write --allow-run --unstable https://raw.githubusercontent.com/joaoh1/Denotator/master/mod.ts folder <path to the folder>`
+`deno run --allow-read --allow-write --allow-run --unstable https://raw.githubusercontent.com/joaoh1/Detonater/master/mod.ts folder <path to the folder>`
 
 Another is by giving it the path to the mod, done with the following syntax:
-`deno run --allow-read --allow-write --allow-run --unstable https://raw.githubusercontent.com/joaoh1/Denotator/master/mod.ts file <path to the file>`
+`deno run --allow-read --allow-write --allow-run --unstable https://raw.githubusercontent.com/joaoh1/Detonater/master/mod.ts file <path to the file>`
 
 ## License
 
