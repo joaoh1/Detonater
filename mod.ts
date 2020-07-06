@@ -1,4 +1,4 @@
-//The Detonator
+//The Detonater
 //Version: 1.0.0
 
 import * as filepath from "https://deno.land/std/path/mod.ts";
@@ -6,10 +6,10 @@ import * as jszip from "https://deno.land/x/jszip/mod.ts";
 import * as fs from "https://deno.land/std/fs/mod.ts";
 import { createHash } from "https://deno.land/std/hash/mod.ts";
 
-const tempDir = await Deno.makeTempDir({ prefix: "detonator_" });
+const tempDir = await Deno.makeTempDir({ prefix: "detonater_" });
 console.log(tempDir);
 
-console.log("Executing the Detonator.");
+console.log("Executing the Detonater.");
 
 if (Deno.args.length >= 2) {
 	const targetPath = filepath.resolve(Deno.args.slice(1).join(" "));

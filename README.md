@@ -1,6 +1,6 @@
-# Detonator
+# Detonater
 
-The Detonator is a tool written in TypeScript for compressing Fabric mods into even smaller ones. This tool is more useful for mods that add content. The compression is done by optimizing PNGs with oxipng's maximum compression level and by minifying the JSON and mcmeta files, the resulting jar file is then deflated with the maximum level, Jar-in-Jar dependencies are also compressed by this tool.
+The Detonater is a tool written in TypeScript for compressing Fabric mods into even smaller ones. This tool is more useful for mods that add content. The compression is done by optimizing PNGs with oxipng's maximum compression level and by minifying the JSON and mcmeta files, the resulting jar file is then deflated with the maximum level, Jar-in-Jar dependencies are also compressed by this tool.
 
 ## Usage
 
