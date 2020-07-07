@@ -45,7 +45,7 @@ async function compressJar(path : string) : Promise<Uint8Array> {
 		console.log(`${filename} was already compressed! Reusing it.`);
 	}
 	const newZip = await rezip(tempJarPath);
-	const optimizedZip = await newZip.generateAsync({compression: "DEFLATE", compressionOptions: { level: 9 }, type: "uint8array"});
+	const optimizedZip = await newZip.generateAsync({compression: "DEFLATE", compressionOptions: { level: 9 }, mimeType: "application/java-archive", type: "uint8array"});
 	console.log(`The compression of ${filename} is done!`);
 	return optimizedZip;
 }
@@ -98,22 +98,20 @@ async function rezip(path : string) : Promise<jszip.JSZip> {
 }
 
 async function searchMod(dir : string) {
-	for await (const file of Deno.readDir(dir)) {
+	for await (const file of fs.walk(dir, { exts: ["json", "mcmeta", "png", "jar"] })) {
 		if (file.name.endsWith(".json")) {
 			console.log(`Found the JSON ${file.name}, minifying it...`);
-			await minifyJson(`${dir}/${file.name}`);
+			await minifyJson(file.path);
 		} else if (file.name.endsWith(".mcmeta")) {
 			console.log(`Found the mcmeta ${file.name}, minifying it...`);
-			await minifyJson(`${dir}/${file.name}`);
+			await minifyJson(file.path);
 		} else if (file.name.endsWith(".png")) {
 			console.log(`Found the PNG ${file.name}, optimizing it with oxipng...`);
-			await optimizePng(`${dir}/${file.name}`);
+			await optimizePng(file.path);
 		} else if (file.name.endsWith(".jar")) {
 			console.log(`Found the JiJ ${file.name}, compressing it...`);
-			const compressedJar = await compressJar(`${dir}/${file.name}`);
-			await Deno.writeFile(`${dir}/${file.name}`, compressedJar);
-		}  else if (file.isDirectory) {
-			await searchMod(`${dir}/${file.name}`);
+			const compressedJar = await compressJar(file.path);
+			await Deno.writeFile(file.path, compressedJar);
 		}
 	}
 }
@@ -121,15 +119,16 @@ async function searchMod(dir : string) {
 async function minifyJson(path : string) {
 	try {
 		const json = await fs.readJson(path);
-		await fs.writeJson(path, json, {spaces: 0});	
+		await fs.writeJson(path, json, { spaces: 0 });	
 	} catch (error) {
+		console.error("The JSON file is malformed! It won't be minified.");
 		console.error(error);
 	}
 }
 
 async function optimizePng(dir : string) {
 	await Deno.run({
-		cmd: ["oxipng", `--opt`, `max`, `--alpha`, `${dir}`],
+		cmd: ["oxipng", `--opt`, `max`, `--strip`, `safe`, `--alpha`, `${dir}`],
 		stdout: "piped"
 	}).output();
 }
