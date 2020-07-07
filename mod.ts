@@ -1,5 +1,5 @@
 //The Detonater
-//Version: 1.0.1
+//Version: 1.0.2
 
 import * as filepath from "https://deno.land/std/path/mod.ts";
 import * as jszip from "https://deno.land/x/jszip/mod.ts";
@@ -36,32 +36,65 @@ async function compressJar(path : string) : Promise<Uint8Array> {
 	const filename = filepath.parse(path).base;
 	const hash = createHash("md5");
 	hash.update(await Deno.readFile(path));
-	const tempJarPath = `${tempDir}/${hash.toString()}`
+	const tempJarPath = `${tempDir}/${hash.toString()}`;
 	if (!await fs.exists(tempJarPath)) {
 		const zip = await jszip.readZip(`${path}`);
-		await betterUnzip(zip, tempJarPath);
+		await unzip(zip, tempJarPath);
 		await searchMod(tempJarPath);
 	} else {
 		console.log(`${filename} was already compressed! Reusing it.`);
 	}
-	const newZip = await jszip.zipDir(tempJarPath);
+	const newZip = await rezip(tempJarPath);
 	const optimizedZip = await newZip.generateAsync({compression: "DEFLATE", compressionOptions: { level: 9 }, type: "uint8array"});
 	console.log(`The compression of ${filename} is done!`);
 	return optimizedZip;
 }
 
-async function betterUnzip(zip : jszip.JSZip, path : string) {
+async function unzip(zip : jszip.JSZip, path : string) {
 	console.log(`Extracting to ${path}`);
 	for (const file of zip) {
 		const dir = file.name.split("/");
 		dir.pop();
+		let fullPath = `${path}/${file.name}`;
+		//Prevent an error when the path gets too big
+		if (Deno.build.os == "windows" && fullPath.length >= 260) {
+			console.log("Found a huge path! Patching it...");
+			fullPath = `\\\\?\\${fullPath}`;
+			fullPath = fullPath.replaceAll("/", "\\");
+		}
 		if (file.dir) {
-			await Deno.mkdir(`${path}/${file.name}`, { recursive: true });
+			await Deno.mkdir(`${fullPath}`, { recursive: true });
 		} else {
 			await fs.ensureDir(`${path}/${dir.join("/")}`);
-			await Deno.writeFile(`${path}/${file.name}`, await file.async("uint8array"));
+			await Deno.writeFile(`${fullPath}`, await file.async("uint8array"));
 		}
 	}
+}
+
+async function rezip(path : string) : Promise<jszip.JSZip> {
+	console.log(`Repackaging to ${path}`);
+	const repackagedZip = new jszip.JSZip();
+	for await (const file of fs.walk(path)) {
+		let filePath = file.path;
+		filePath = filePath.replaceAll("\\", "/");
+		path = path.replaceAll("\\", "/");
+		if (file.isDirectory) {
+			if (filePath != path) {
+				repackagedZip.addFile(filePath.replace(path, "").substring(1), "", { dir: true });
+			}
+		} else {
+			let windowsFilePath = filePath;
+			//Prevent an error when the path gets too big
+			if (Deno.build.os == "windows" && windowsFilePath.length >= 260) {
+				console.log("Found a huge path! Patching it...");
+				windowsFilePath = `\\\\?\\${windowsFilePath}`;
+				windowsFilePath = windowsFilePath.replaceAll("/", "\\");
+			}
+			const repackagedFile = await Deno.readFile(windowsFilePath);
+			repackagedZip.addFile(filePath.replaceAll("\\", "/").replace(path, "").substring(1), repackagedFile, { compression: "DEFLATE", createFolders: true });
+		}
+	}
+	return repackagedZip;
 }
 
 async function searchMod(dir : string) {
