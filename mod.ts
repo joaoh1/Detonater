@@ -118,8 +118,8 @@ async function searchMod(dir : string) {
 
 async function minifyJson(path : string) {
 	try {
-		const json = await fs.readJson(path);
-		await fs.writeJson(path, json, { spaces: 0 });	
+		const json = await JSON.parse(await Deno.readTextFile(path));
+		await Deno.writeTextFile(path, JSON.stringify(json));	
 	} catch (error) {
 		console.error("The JSON file is malformed! It won't be minified.");
 		console.error(error);
